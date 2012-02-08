@@ -1,8 +1,11 @@
 package model.expression;
 
+import java.util.HashMap;
 import java.util.List;
 
 import model.RGBColor;
+import model.expression.Expression;
+import model.expression.ParenExpression;
 
 public class CeilExpression extends ParenExpression {
 
@@ -11,8 +14,8 @@ public class CeilExpression extends ParenExpression {
 	}
 
 	@Override
-	public RGBColor evaluate() {
-		List<RGBColor> results = evaluateSubexpressions();
+    public RGBColor evaluate (HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime) {
+		List<RGBColor> results = evaluateSubexpressions(varMap, evalX, evalY, myCurrentTime);
 		return ceil(results.get(0));
 	}
 
@@ -29,6 +32,10 @@ public class CeilExpression extends ParenExpression {
 		@Override
 		protected String commandName() {
 			return "ceil";
+		}
+		
+		protected String altName() {
+			return "";
 		}
 
 		@Override

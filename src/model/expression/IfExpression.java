@@ -4,20 +4,25 @@ import java.util.HashMap;
 import java.util.List;
 
 import model.RGBColor;
+import model.expression.Expression;
+import model.expression.ParenExpression;
 
-public class LetExpression extends ParenExpression {
+public class IfExpression extends ParenExpression {
 
-	protected LetExpression(List<Expression> subexpressions) {
+	protected IfExpression(List<Expression> subexpressions) {
 		super(subexpressions);
 	}
 
 	@Override
 	public RGBColor evaluate (HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime) {
-		HashMap<String, Expression> newvarMap = new HashMap<String, Expression>();
-		newvarMap.putAll(varMap);
-
 		List<RGBColor> results = evaluateSubexpressions(varMap, evalX, evalY, myCurrentTime);
-		return results.get(0);
+		RGBColor zero = new RGBColor(0);
+		if(results.get(0).compareTo(zero)>0) {
+			return results.get(1);
+		}
+		else {
+			return results.get(2);
+		}
 	}
 
 	public static class Factory extends ParenExpression.Factory
@@ -25,7 +30,7 @@ public class LetExpression extends ParenExpression {
 
 		@Override
 		protected String commandName() {
-			return "let";
+			return "if";
 		}
 
 		protected String altName() {
@@ -34,13 +39,13 @@ public class LetExpression extends ParenExpression {
 
 		@Override
 		protected int numberOfParameters() {
-			return 0;
+			return 3;
 		}
 
 		@Override
 		protected ParenExpression constructParenExpression(
 				List<Expression> subExpressions) {
-			return new LetExpression(subExpressions);
+			return new IfExpression(subExpressions);
 		}
 	}
 }

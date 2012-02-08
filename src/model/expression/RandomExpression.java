@@ -1,9 +1,12 @@
 package model.expression;
 
+import java.util.HashMap;
 import java.util.List;
 
 import model.Model;
 import model.RGBColor;
+import model.expression.Expression;
+import model.expression.ParenExpression;
 
 public class RandomExpression extends ParenExpression {
 
@@ -16,15 +19,12 @@ public class RandomExpression extends ParenExpression {
     }
 
     @Override
-    public RGBColor evaluate() {
-        List<RGBColor> results = evaluateSubexpressions();
+    public RGBColor evaluate (HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime) {
         return random();
     }
     
     public static RGBColor random ()
 	{
-    
-
 		return new RGBColor(randomNum1, randomNum2, randomNum3);
 	}
     
@@ -33,10 +33,14 @@ public class RandomExpression extends ParenExpression {
 
         @Override
         protected String commandName() {
-        	 randomNum1 = Model.DOMAIN_MIN + (Math.random()*Model.DOMAIN_MAX);
-        	 randomNum2 = Model.DOMAIN_MIN + (Math.random()*Model.DOMAIN_MAX);
-        	 randomNum3 = Model.DOMAIN_MIN + (Math.random()*Model.DOMAIN_MAX);
+       	 randomNum1 = Model.DOMAIN_MIN + (Math.random()*Model.DOMAIN_MAX);
+    	 randomNum2 = Model.DOMAIN_MIN + (Math.random()*Model.DOMAIN_MAX);
+    	 randomNum3 = Model.DOMAIN_MIN + (Math.random()*Model.DOMAIN_MAX);
             return "random";
+        }
+        
+        protected String altName() {
+            return "";
         }
 
         @Override

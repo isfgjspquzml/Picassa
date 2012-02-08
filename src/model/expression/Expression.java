@@ -1,5 +1,6 @@
 package model.expression;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,14 +17,11 @@ import model.*;
  */
 public abstract class Expression
 {
-	protected static String varname;
-	protected static RGBColor varColor;
-
-    public abstract RGBColor evaluate ();
+    public abstract RGBColor evaluate (HashMap<String, Expression> map, double evalX, double evalY, double myCurrentTime);
     public static abstract class Factory
     {
-        public abstract boolean isKindOfExpression(Parser parser);
-        public abstract Expression parseExpression(Parser parser);
+        public abstract boolean isKindOfExpression(Parser parser, HashMap<String, Expression> varMap);
+		public abstract Expression parseExpression(Parser parser, HashMap<String, Expression> varMap);
         
         protected boolean regexMatches(Pattern regex, Parser parser) {
             Matcher expMatcher =
@@ -31,5 +29,4 @@ public abstract class Expression
             return expMatcher.lookingAt();
         }
     }
-
 }

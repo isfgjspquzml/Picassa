@@ -1,22 +1,8 @@
 package model;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import model.expression.*;
 
-
-/**
- * Parses a string into an expression tree based on rules for arithmetic.
- * 
- * Due to the nature of the language being parsed, a recursive descent parser 
- * is used 
- *   http://en.wikipedia.org/wiki/Recursive_descent_parser
- *   
- * @author former student solution
- * @author Robert C. Duvall (added comments, exceptions, some functions)
- */
 public class Parser
 {
 
@@ -25,7 +11,6 @@ public class Parser
         constructExpressionTypes();
     }
     
-    // state of the parser
     private int myCurrentPosition;
     private String myInput;
     private List<Expression.Factory> expressionTypes;
@@ -33,8 +18,13 @@ public class Parser
     private void constructExpressionTypes()
     {
         expressionTypes = new ArrayList<Expression.Factory>();
-        expressionTypes.add(new XYExpression.Factory());
         expressionTypes.add(new NumberExpression.Factory());
+        expressionTypes.add(new XExpression.Factory());
+        expressionTypes.add(new YExpression.Factory());
+        expressionTypes.add(new TExpression.Factory());
+        expressionTypes.add(new VarExpression.Factory());
+        expressionTypes.add(new LetExpression.Factory());
+        expressionTypes.add(new VarExpression.Factory());
         expressionTypes.add(new PlusExpression.Factory());
         expressionTypes.add(new MinusExpression.Factory());
         expressionTypes.add(new ColorExpression.Factory());
@@ -58,21 +48,19 @@ public class Parser
         expressionTypes.add(new PerlinBWExpression.Factory());
         expressionTypes.add(new rgbToYCrCbExpression.Factory());
         expressionTypes.add(new yCrCbtoRGBExpression.Factory());
-        expressionTypes.add(new LetExpression.Factory());
-        expressionTypes.add(new VarNameExpression.Factory());
-    }
+        expressionTypes.add(new MaxExpression.Factory());
+        expressionTypes.add(new MinExpression.Factory());
+        expressionTypes.add(new SumExpression.Factory());
+        expressionTypes.add(new ProductExpression.Factory());
+        expressionTypes.add(new AverageExpression.Factory());
+        expressionTypes.add(new IfExpression.Factory());
+}
 
-    /**
-     * Converts given string into expression tree.
-     * 
-     * @param input expression given in the language to be parsed
-     * @return expression tree representing the given formula
-     */
-    public Expression makeExpression (String input)
+    public Expression makeExpression (String input, HashMap<String, Expression> varMap)
     {
         myInput = input;
         myCurrentPosition = 0;
-        Expression result = parseExpression();
+        Expression result = parseExpression(varMap);
         skipWhiteSpace();
         if (notAtEndOfString())
         {
@@ -85,12 +73,12 @@ public class Parser
 
 
 
-    public Expression parseExpression ()
+    public Expression parseExpression (HashMap<String, Expression> varMap)
     {
         skipWhiteSpace();
         for(Expression.Factory type : expressionTypes) {
-            if(type.isKindOfExpression(this)) {
-                return type.parseExpression(this);
+            if(type.isKindOfExpression(this, varMap)) {
+                return type.parseExpression(this, varMap);
             }
         }
         throw new ParserException("Unparsable expression: " + stringAtCurrentPosition());
@@ -120,7 +108,7 @@ public class Parser
         myCurrentPosition += chars;
     }
     
-    private boolean notAtEndOfString ()
+    public boolean notAtEndOfString ()
     {
         return myCurrentPosition < myInput.length();
     }

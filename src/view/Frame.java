@@ -10,6 +10,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import java.util.TimerTask;
+import java.util.Timer;
 import model.Model;
 import model.ParserException;
 import model.Pixmap;
@@ -24,11 +26,14 @@ public class Frame extends JFrame
 {
     // default version number
     private static final long serialVersionUID = 1L;
-    // my state
+    private static final int ANIMATION_DELAY = 100;    // in milli-seconds
+
+    // state
     private Model myModel;
     private JLabel myDisplay;
     private JTextField myInput;
-    private Dimension mySize;
+    private Timer myTimer;
+
 
 
     /**
@@ -36,7 +41,6 @@ public class Frame extends JFrame
      */
     public Frame (String title, Dimension size)
     {
-        mySize = size;
         // create GUI components
         myDisplay = makeDisplay(size);
         myInput = makeInput();
@@ -46,6 +50,8 @@ public class Frame extends JFrame
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle(title);
         pack();
+        // support animation, initially stopped
+        myTimer = null;
     }
 
 
@@ -71,17 +77,7 @@ public class Frame extends JFrame
                 @Override
                 public void actionPerformed (ActionEvent evt)
                 {
-                    try
-                    {
-                        myDisplay.setIcon(myModel.evaluate(myInput.getText(), mySize).toIcon());
-                    }
-                    catch (ParserException e)
-                    {
-                        JOptionPane.showMessageDialog(Frame.this,
-                                                      e.getMessage(),
-                                                      "Input Error",
-                                                      JOptionPane.ERROR_MESSAGE);
-                    }
+                    animateExpression(myInput.getText());
                 }
             });
         return result;
@@ -93,5 +89,57 @@ public class Frame extends JFrame
         JLabel result = new JLabel(new Pixmap(size).toIcon());
         result.setBorder(BorderFactory.createLoweredBevelBorder());
         return result;
+    }
+
+    // Evaluate the given input repeatedly to produce an animation
+    private void animateExpression (final String text)
+    {
+        // generate new pictures to animate
+        TimerTask task = new TimerTask()
+            {
+                private int index = 0;
+                @Override
+                public void run ()
+                {
+                    try
+                    {
+                        if (index <= Model.NUM_FRAMES)
+                        {
+                            myDisplay.setIcon(myModel.evaluate(text, myDisplay.getSize()).toIcon());
+                            myModel.nextFrame();
+                            index++;
+                        }
+                        else
+                        {
+                            endAnimation();
+                        }
+                    }
+                    catch (ParserException e)
+                    {
+                        endAnimation();
+                        JOptionPane.showMessageDialog(Frame.this,
+                                                      e.getMessage(),
+                                                      "Input Error",
+                                                      JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            };
+        // end previous animation if still running
+        endAnimation();
+        // start new animation
+        myTimer = new Timer();
+        myTimer.schedule(task, 0, ANIMATION_DELAY);
+        myModel.reset();
+    }
+
+
+    // Silly Java anachronism that you cannot cancel the same Timer twice
+    private void endAnimation ()
+    {
+        if (myTimer != null)
+        {
+            myTimer.cancel();
+            myTimer = null;
+        }
     }
 }

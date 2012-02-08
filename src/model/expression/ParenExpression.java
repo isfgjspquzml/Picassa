@@ -8,7 +8,6 @@ import model.*;
 public abstract class ParenExpression extends Expression {
 
 	private static String myCommand;
-
 	private List<Expression> subexpressions;
 
 	protected ParenExpression(List<Expression> subexpressions)
@@ -16,15 +15,14 @@ public abstract class ParenExpression extends Expression {
 		this.subexpressions = subexpressions;
 	}
 
-	protected List<RGBColor> evaluateSubexpressions()
+	protected List<RGBColor> evaluateSubexpressions(HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime)
 	{
 		List<RGBColor> result = new ArrayList<RGBColor>(subexpressions.size());
 		for(Expression exp : subexpressions) {
-			result.add(exp.evaluate());
+			result.add(exp.evaluate(varMap, evalX, evalY, myCurrentTime));
 		}
 		return result;
 	}
-
 	protected List<Expression> getSubexpressions()
 	{
 		return Collections.unmodifiableList(subexpressions);
@@ -42,51 +40,56 @@ public abstract class ParenExpression extends Expression {
 		}
 
 		@Override
-		public boolean isKindOfExpression(Parser parser) {
-			if(!regexMatches(EXPRESSION_BEGIN_REGEX,parser))
-				return false;
+		public boolean isKindOfExpression(Parser parser, HashMap<String, Expression> varMap) {
+			String[] symbol = parser.stringAtCurrentPosition().split(" ");
+			String tomatch = symbol[0];
+			myCommand = altName();
+
+			if(tomatch.substring(1).equals(altName())) {
+				return true;
+			}
+			
+			if(!regexMatches(EXPRESSION_BEGIN_REGEX,parser)) {
+				return false;}
 			myCommand = commandName();
 			return getCommand(parser).equals(commandName());
 		}
 
+		protected abstract String altName();
 		protected abstract String commandName();
 		protected abstract int numberOfParameters();
 		protected abstract ParenExpression constructParenExpression(List<Expression> subExpressions);
 
 		@Override
-		public Expression parseExpression(Parser parser) {
-			if(!isKindOfExpression(parser))
+		public Expression parseExpression(Parser parser, HashMap<String, Expression> varMap) {
+			if(!isKindOfExpression(parser, varMap))
 				throw new ParserException("Attempt to parse invalid string as " + commandName() + " paren expression");
-			//move past left paren and command name
-			parser.advanceCurrentPosition(commandName().length() + 1);
-
-			if(myCommand.equals("let")) {
-				parser.advanceCurrentPosition(1);
-				varname = "";
-
-				while(parser.currentCharacter()!=' ') {
-					varname = varname +	parser.currentCharacter();
-					parser.advanceCurrentPosition(1);
-				}	
-				parser.advanceCurrentPosition(varname.length() + 1);
-			}
 
 			List<Expression> subexpressions = new ArrayList<Expression>();
-			for(int i = 0; i < numberOfParameters(); i++) {
-				subexpressions.add(parser.parseExpression());
+
+			parser.advanceCurrentPosition(myCommand.length()+1);
+
+			if(myCommand.equals("let")) {
+				String[] input = parser.stringAtCurrentPosition().substring(1).split(" ");
+				String varname = input[0];
+
+				parser.advanceCurrentPosition(varname.length() + 1);
+
+				Expression varequals = parser.parseExpression(varMap);
+				varMap.put(varname, varequals);
+
+				subexpressions.add(parser.parseExpression(varMap));
 			}
 
-			parser.skipWhiteSpace();
-			if (parser.currentCharacter() == ')')
-			{
+			for(int i = 0; i < numberOfParameters(); i++) {
+				subexpressions.add(parser.parseExpression(varMap));
+			}
+
+			if(parser.currentCharacter()==')') {
 				parser.advanceCurrentPosition(1);
-				return constructParenExpression(subexpressions);
 			}
-			else
-			{
-				throw new ParserException("Expected close paren, instead found " +
-						parser.stringAtCurrentPosition());
-			}
+
+			return constructParenExpression(subexpressions);
 		}       
 	}
 }

@@ -1,6 +1,7 @@
 package model;
 
 import java.awt.Dimension;
+import java.util.HashMap;
 
 import model.expression.Expression;
 
@@ -14,20 +15,28 @@ public class Model
 {
     public static final double DOMAIN_MIN = -1;
     public static final double DOMAIN_MAX = 1;
+    public static final int NUM_FRAMES = 50;
 
-    public static double evalX;
-    public static double evalY;
+    private double evalX;
+    private double evalY;
+    private double myCurrentTime = -1;
 
-    
-    /**
-     * Evaluate an expression for each point in the image.
-     */
+    public void reset ()
+    {
+        myCurrentTime = -1;
+    }
+
+    public void nextFrame ()
+    {
+        myCurrentTime += 2.0 / NUM_FRAMES;
+    }
+
     public Pixmap evaluate (String input, Dimension size)
     {
         Pixmap result = new Pixmap(size);
-        // create expression to evaluate just once
-        Expression toEval = new Parser().makeExpression(input);
-        // evaluate at each pixel
+        HashMap<String, Expression> varMap = new HashMap<String, Expression>();
+        Expression toEval = new Parser().makeExpression(input, varMap);
+        
         for (int imageY = 0; imageY < size.height; imageY++)
         {
             evalY = imageToDomainScale(imageY, size.height);
@@ -35,7 +44,7 @@ public class Model
             {
                 evalX = imageToDomainScale(imageX, size.width);
                 result.setColor(imageX, imageY,
-                                toEval.evaluate().toJavaColor());
+                                toEval.evaluate(varMap, evalX, evalY, myCurrentTime).toJavaColor());
             }
         }
         return result;

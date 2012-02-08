@@ -1,8 +1,11 @@
 package model.expression;
 
+import java.util.HashMap;
 import java.util.List;
 
 import model.RGBColor;
+import model.expression.Expression;
+import model.expression.ParenExpression;
 
 public class PlusExpression extends ParenExpression {
 
@@ -11,8 +14,8 @@ public class PlusExpression extends ParenExpression {
     }
 
     @Override
-    public RGBColor evaluate() {
-        List<RGBColor> results = evaluateSubexpressions();
+    public RGBColor evaluate (HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime) {
+		List<RGBColor> results = evaluateSubexpressions(varMap, evalX, evalY, myCurrentTime);
         return add(results.get(0), results.get(1));
     }
     
@@ -31,6 +34,10 @@ public class PlusExpression extends ParenExpression {
             return "plus";
         }
 
+        protected String altName() {
+			return "+";
+		}
+        
         @Override
         protected int numberOfParameters() {
             return 2;

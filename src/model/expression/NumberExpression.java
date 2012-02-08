@@ -1,5 +1,6 @@
 package model.expression;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,7 @@ public class NumberExpression extends Expression {
     }
 
     @Override
-    public RGBColor evaluate() {
+    public RGBColor evaluate (HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime) {
         return color;
     }
 
@@ -28,12 +29,12 @@ public class NumberExpression extends Expression {
             Pattern.compile("(\\-?[0-9]+(\\.[0-9]+)?)|(\\.[0-9]+)");
 
         @Override
-        public boolean isKindOfExpression(Parser parser) {
+		public boolean isKindOfExpression(Parser parser, HashMap<String, Expression> varMap) {
             return regexMatches(DOUBLE_REGEX, parser);
         }
 
         @Override
-        public Expression parseExpression(Parser parser) {
+		public Expression parseExpression(Parser parser, HashMap<String, Expression> varMap) {
             String input = parser.stringAtCurrentPosition();
             Matcher doubleMatcher = DOUBLE_REGEX.matcher(input);
             doubleMatcher.find(0);

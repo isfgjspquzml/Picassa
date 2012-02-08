@@ -1,8 +1,11 @@
 package model.expression;
 
+import java.util.HashMap;
 import java.util.List;
 
 import model.RGBColor;
+import model.expression.Expression;
+import model.expression.ParenExpression;
 
 public class AtanExpression extends ParenExpression {
 
@@ -11,8 +14,8 @@ public class AtanExpression extends ParenExpression {
     }
 
     @Override
-    public RGBColor evaluate() {
-        List<RGBColor> results = evaluateSubexpressions();
+    public RGBColor evaluate (HashMap<String, Expression> varMap, double evalX, double evalY, double myCurrentTime) {
+		List<RGBColor> results = evaluateSubexpressions(varMap, evalX, evalY, myCurrentTime);
         return arctan(results.get(0));
     }
     
@@ -31,6 +34,10 @@ public class AtanExpression extends ParenExpression {
             return "atan";
         }
 
+		protected String altName() {
+			return "";
+		}
+        
         @Override
         protected int numberOfParameters() {
             return 1;
