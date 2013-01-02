@@ -1,9 +1,0 @@
-Tianyu Shi
-Date Submitted: 2/6/2011
-Date Completed: 2/7/2011
-Number of Hours: 50+
-Estimated Hours: 25
-My estimate of the amount of time this project would take was quite off
-In completing this assignment I got help from Hewner, Jain, and a little bit from my TA.
-I didn't really use any additional resources to complete this assignment.
-My impression of this assignment: I liked the assignment. I thought it was cool and that everything was fun to implement. It took me a long time to get started however and I felt lost at times.
